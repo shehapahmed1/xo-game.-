@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#061638">
+<title>XO — لعبة إكس أو</title>
+<style>
+:root{--bg:#04112b;--panel:#071d43;--blue:#08bfff;--blue2:#0878ff;--cyan:#7de7ff;--purple:#a58bff;--text:#f4f9ff;--muted:#9cc8ef}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;min-height:100dvh;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;color:var(--text);background:radial-gradient(ellipse at 50% 38%,#0a2d69 0,#061b42 42%,var(--bg) 78%);display:flex;justify-content:center;align-items:center;padding:22px 15px;overflow-x:hidden}
+body:before,body:after{content:"";position:fixed;width:190px;height:190px;pointer-events:none;opacity:.5;border:2px solid #0878ff;transform:rotate(45deg)}
+body:before{top:-145px;left:-80px;box-shadow:0 0 30px #0878ff}
+body:after{bottom:-150px;right:-80px;box-shadow:0 0 30px #0878ff}
+.app{width:min(100%,520px);position:relative;z-index:1}
+header{text-align:center;margin-bottom:22px}
+.logo{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:7px}
+.logo-mark{font-size:clamp(2.3rem,10vw,4rem);font-weight:900;letter-spacing:-5px;color:var(--cyan);text-shadow:0 0 12px #00bfff,0 0 28px #007bff}
+h1{font-size:clamp(1.6rem,7vw,2.35rem);margin:0;font-weight:850;letter-spacing:-1px}
+.subtitle{color:var(--muted);font-size:1rem;margin:4px 0 0}
+.panel{border:1px solid #0878ff88;background:linear-gradient(135deg,#0a2450e8,#061735f5);border-radius:24px;box-shadow:0 0 28px #006dff22,inset 0 1px 0 #ffffff12}
+.scoreboard{display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;align-items:center;padding:13px 9px;margin-bottom:23px;gap:4px}
+.turn{display:flex;align-items:center;gap:9px;padding:5px 8px;min-width:0}
+.turn-symbol{font-size:2.4rem;font-weight:900;color:var(--blue);text-shadow:0 0 12px #00bfff;line-height:1}
+.turn-copy{font-size:.78rem;color:var(--muted);line-height:1.6}
+.turn-copy strong{display:block;color:var(--text);font-size:.9rem}
+.score{border-right:1px solid #0878ff66;text-align:center;padding:4px 2px}
+.score b{font-size:1.2rem;display:block}
+.score span{font-size:.72rem;color:var(--muted)}
+.score.x b{color:var(--cyan)}.score.o b{color:var(--purple)}
+.board-wrap{padding:10px;border:2px solid #078dff;border-radius:29px;box-shadow:0 0 16px #007bff66,inset 0 0 18px #006dff22;margin:0 auto 22px;max-width:430px;background:#04132be8}
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;aspect-ratio:1}
+.cell{border:1px solid #0878ff;background:linear-gradient(145deg,#0a2b60,#061a3b);border-radius:19px;color:var(--cyan);font-size:clamp(2.6rem,13vw,4.2rem);font-weight:850;display:grid;place-items:center;cursor:pointer;min-width:0;min-height:0;box-shadow:inset 0 0 18px #0878ff12;transition:transform .15s,background .15s,border-color .15s,box-shadow .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.cell:focus-visible,.btn:focus-visible{outline:3px solid white;outline-offset:3px}
+.cell:not(:disabled):active{transform:scale(.96)}
+.cell:disabled{cursor:default}
+.cell.o{color:var(--purple);text-shadow:0 0 16px #9470ff55}
+.cell.x{color:var(--cyan);text-shadow:0 0 16px #00bfff66}
+.cell.winner{background:linear-gradient(145deg,#075ca4,#073d82);border-color:#72edff;box-shadow:0 0 20px #00bfff55,inset 0 0 20px #00bfff22;animation:pulse .8s ease-in-out infinite alternate}
+@keyframes pulse{from{box-shadow:0 0 8px #00bfff33}to{box-shadow:0 0 22px #00bfff88}}
+.status{text-align:center;min-height:28px;color:var(--cyan);font-weight:750;margin:0 0 14px;font-size:1rem}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:1px solid #168bff;border-radius:15px;padding:13px 12px;font:inherit;font-weight:750;color:white;background:linear-gradient(135deg,#087eff,#0752dc);box-shadow:0 7px 20px #006dff33;cursor:pointer;transition:transform .15s,filter .15s;touch-action:manipulation}
+.btn:active{transform:scale(.98)}.btn.secondary{background:#0a2045;border-color:#1b5a9d;color:#cbe9ff;box-shadow:none}
+footer{text-align:center;color:#6baee7;font-size:.82rem;margin-top:20px}
+@media(max-width:360px){.scoreboard{grid-template-columns:1.15fr 1fr 1fr 1fr;padding:10px 5px}.turn{gap:5px;padding:4px}.turn-symbol{font-size:1.9rem}.turn-copy{font-size:.68rem}.turn-copy strong{font-size:.76rem}.board{gap:6px}.cell{border-radius:14px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <div class="logo"><span class="logo-mark">X O</span><h1>Tic-Tac-Toe</h1></div>
+    <p class="subtitle">لعبة إكس أو · تحدّي الذكاء</p>
+  </header>
+
+  <section class="panel scoreboard" aria-label="نتيجة المباراة">
+    <div class="turn"><div class="turn-symbol" id="turnSymbol">X</div><div class="turn-copy"><strong id="turnTitle">دور اللاعب</strong><span id="turnText">اللاعب X يلعب الآن</span></div></div>
+    <div class="score x"><b id="scoreX">0</b><span>فوز X</span></div>
+    <div class="score o"><b id="scoreO">0</b><span>فوز O</span></div>
+    <div class="score"><b id="scoreDraw">0</b><span>تعادل</span></div>
+  </section>
+
+  <section class="board-wrap" aria-label="لوحة اللعب">
+    <div class="board" id="board" role="grid" aria-label="لوحة إكس أو">
+      <button class="cell" data-index="0" role="gridcell" aria-label="الخانة 1"></button>
+      <button class="cell" data-index="1" role="gridcell" aria-label="الخانة 2"></button>
+      <button class="cell" data-index="2" role="gridcell" aria-label="الخانة 3"></button>
+      <button class="cell" data-index="3" role="gridcell" aria-label="الخانة 4"></button>
+      <button class="cell" data-index="4" role="gridcell" aria-label="الخانة 5"></button>
+      <button class="cell" data-index="5" role="gridcell" aria-label="الخانة 6"></button>
+      <button class="cell" data-index="6" role="gridcell" aria-label="الخانة 7"></button>
+      <button class="cell" data-index="7" role="gridcell" aria-label="الخانة 8"></button>
+      <button class="cell" data-index="8" role="gridcell" aria-label="الخانة 9"></button>
+    </div>
+  </section>
+
+  <p class="status" id="status" aria-live="polite">دور اللاعب X — ابدأ اللعب!</p>
+  <div class="actions">
+    <button class="btn" id="restartBtn">↻ إعادة اللعبة</button>
+    <button class="btn secondary" id="resetScoreBtn">⟲ تصفير النتائج</button>
+  </div>
+  <footer>✦ استمتع باللعب ✦</footer>
+</main>
+<script>
+(() => {
+  const cells = [...document.querySelectorAll('.cell')];
+  const status = document.getElementById('status');
+  const turnSymbol = document.getElementById('turnSymbol');
+  const turnTitle = document.getElementById('turnTitle');
+  const turnText = document.getElementById('turnText');
+  const scoreXEl = document.getElementById('scoreX');
+  const scoreOEl = document.getElementById('scoreO');
+  const scoreDrawEl = document.getElementById('scoreDraw');
+  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  let board = Array(9).fill('');
+  let player = 'X';
+  let running = true;
+  let scores = {X:0,O:0,draw:0};
+
+  function renderTurn() {
+    turnSymbol.textContent = player;
+    turnSymbol.style.color = player === 'X' ? 'var(--blue)' : 'var(--purple)';
+    turnTitle.textContent = 'دور اللاعب';
+    turnText.textContent = `اللاعب ${player} يلعب الآن`;
+  }
+  function updateScores() {
+    scoreXEl.textContent = scores.X;
+    scoreOEl.textContent = scores.O;
+    scoreDrawEl.textContent = scores.draw;
+  }
+  function findWinner() {
+    for (const line of wins) {
+      const [a,b,c] = line;
+      if (board[a] && board[a] === board[b] && board[a] === board[c]) return line;
+    }
+    return null;
+  }
+  function play(index) {
+    if (!running || board[index]) return;
+    board[index] = player;
+    const cell = cells[index];
+    cell.textContent = player;
+    cell.classList.add(player.toLowerCase());
+    cell.setAttribute('aria-label', `الخانة ${index+1}: ${player}`);
+    cell.disabled = true;
+
+    const winningLine = findWinner();
+    if (winningLine) {
+      running = false;
+      winningLine.forEach(i => cells[i].classList.add('winner'));
+      status.textContent = `🎉 اللاعب ${player} فاز!`;
+      turnTitle.textContent = 'انتهت الجولة';
+      turnText.textContent = `الفائز ${player}`;
+      scores[player]++;
+      updateScores();
+      cells.forEach(c => c.disabled = true);
+      return;
+    }
+    if (board.every(Boolean)) {
+      running = false;
+      status.textContent = '🤝 تعادل! جرّب جولة جديدة';
+      turnTitle.textContent = 'انتهت الجولة';
+      turnText.textContent = 'تعادل';
+      scores.draw++;
+      updateScores();
+      return;
+    }
+    player = player === 'X' ? 'O' : 'X';
+    renderTurn();
+    status.textContent = `دور اللاعب ${player} — اختر خانة`;
+  }
+  function restartGame() {
+    board = Array(9).fill('');
+    player = 'X';
+    running = true;
+    cells.forEach((cell, i) => {
+      cell.textContent = '';
+      cell.disabled = false;
+      cell.className = 'cell';
+      cell.setAttribute('aria-label', `الخانة ${i+1}`);
+    });
+    renderTurn();
+    status.textContent = 'دور اللاعب X — ابدأ اللعب!';
+  }
+  cells.forEach((cell, i) => cell.addEventListener('click', () => play(i)));
+  document.getElementById('restartBtn').addEventListener('click', restartGame);
+  document.getElementById('resetScoreBtn').addEventListener('click', () => {
+    scores = {X:0,O:0,draw:0};
+    updateScores();
+    restartGame();
+    status.textContent = 'تم تصفير النتائج — ابدأ جولة جديدة!';
+  });
+  renderTurn();
+})();
+</script>
+</body>
+</html>
